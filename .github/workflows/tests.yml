@@ -1,0 +1,42 @@
+name: QA lab tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  api-sql:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - run: python -m pip install -r requirements-lock.txt
+      - run: python -m pytest -m 'api or sql' --junitxml=test-results/api-sql.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-sql-${{ matrix.python }}
+          path: test-results/
+  ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements-lock.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python -m pytest -m ui --browser chromium --tracing retain-on-failure --screenshot only-on-failure --junitxml=test-results/ui.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-evidence
+          path: test-results/

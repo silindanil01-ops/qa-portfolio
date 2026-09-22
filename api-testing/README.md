@@ -1,32 +1,27 @@
-# API Testing
+# REST API — JSONPlaceholder
 
-В этой папке размещены коллекции запросов и автотесты для API.
+Учебная Postman-коллекция: **5 запросов и 18 проверок**. Актуальный файл — [JSONPlaceholder_API_Tests.postman_collection.json](JSONPlaceholder_API_Tests.postman_collection.json).
 
-## Используемые инструменты
-- [Postman](https://www.postman.com) — отправка запросов и автотесты
-- [JSONPlaceholder](https://jsonplaceholder.typicode.com) — учебный API
+Исходный [ReqRes_API_Tests.postman_collection.json](ReqRes_API_Tests.postman_collection.json) оставлен для истории: несмотря на имя, его адреса ведут в JSONPlaceholder; в экспорте присутствуют две `pm.test` проверки. Скриншот [PM-collection.png](PM-collection.png) относится к исходной работе, а не к новому прогону.
 
-## Что внутри
+| Метод | Путь | Ожидание | Дополнительная проверка |
+|---|---|---|---|
+| GET | /users | 200 | Массив из 10 записей, id и email |
+| GET | /users/2 | 200 | id = 2, email |
+| GET | /users/999 | 404 | Пустой объект |
+| POST | /users | 201 | id, переданные name и email |
+| DELETE | /users/1 | 200 | Пустой объект |
 
-### Коллекция запросов "ReqRes API Tests"
-5 запросов покрывающих основные HTTP методы:
+Все запросы проверяют Content-Type. Жёсткий SLA на время ответа учебного внешнего API не заявлен.
 
-| Метод | Endpoint | Ожидаемый статус | Описание |
-|-------|----------|------------------|----------|
-| GET | /users | 200 OK | Получение списка пользователей |
-| GET | /users/2 | 200 OK | Получение одного пользователя |
-| GET | /users/999 | 404 Not Found | Несуществующий пользователь |
-| POST | /users | 201 Created | Создание пользователя |
-| DELETE | /users/1 | 200 OK | Удаление пользователя |
+## Запуск
 
-### Автотесты на JavaScript
-Написаны 5 автотестов проверяющих:
-- Корректность статус-кодов (200, 404)
-- Время ответа (responseTime < 2000 ms)
-- Тип данных в ответе (массив или объект)
-- Длину массива (10 пользователей)
-- Наличие обязательных полей в JSON (email)
+В Postman импортировать актуальный JSON, проверить `baseUrl`, выполнить Collection Runner. В Newman:
 
-## Файлы
-- `postman_collection.json` — экспорт коллекции Postman
-- Скриншоты тестов с PASSED результатами
+```bash
+npx newman run api-testing/JSONPlaceholder_API_Tests.postman_collection.json
+```
+
+POST и DELETE у JSONPlaceholder имитируют запись: данные не сохраняются на сервере. Поэтому последующий GET не доказывает создание или удаление. Для настоящего цикла изменения данных есть [локальный Reservation Lab](../automation/README.md).
+
+Обновлённые проверки подготовлены с помощью Codex. Статус фактического запуска — в [отчёте](../automation/verification.md). [Документация JSONPlaceholder](https://jsonplaceholder.typicode.com/guide/).
