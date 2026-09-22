@@ -56,4 +56,4 @@ python -m pytest --browser chromium --junitxml=test-results/results.xml
 | Проверка данных | SQLite, JOIN, GROUP BY, CTE, оконная функция | [SQL](automation/sql) |
 | Запуск в CI | GitHub Actions, JUnit XML, Playwright trace при ошибке | [Workflow](.github/workflows/tests.yml) |
 
-Веб-версия портфолио находится в [docs/index.html](docs/index.html). Её можно опубликовать через GitHub Pages. Инструкция по загрузке и настройке Pages — в [career/START_HERE.md](career/START_HERE.md).
+Веб-версия портфолио находится в [docs/index.html](docs/index.html). Её можно опубликовать через GitHub Pages. Инструкция по настройке Pages — в [career/START_HERE.md](career/START_HERE.md).
