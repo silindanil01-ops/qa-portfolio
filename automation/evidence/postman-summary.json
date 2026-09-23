@@ -1,0 +1,123 @@
+{
+  "tool": "Newman",
+  "run_started_unix_ms": 1790103197865,
+  "requests": {
+    "total": 5,
+    "pending": 0,
+    "failed": 0
+  },
+  "assertions": {
+    "total": 18,
+    "pending": 0,
+    "failed": 0
+  },
+  "executions": [
+    {
+      "name": "List users",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "Status 200",
+          "passed": true
+        },
+        {
+          "name": "JSON content type",
+          "passed": true
+        },
+        {
+          "name": "List has ten users",
+          "passed": true
+        },
+        {
+          "name": "Every user has id and email",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Get user 2",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "Status 200",
+          "passed": true
+        },
+        {
+          "name": "JSON content type",
+          "passed": true
+        },
+        {
+          "name": "Returned id is 2",
+          "passed": true
+        },
+        {
+          "name": "Email exists",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Unknown user",
+      "method": "GET",
+      "status": 404,
+      "assertions": [
+        {
+          "name": "Status 404",
+          "passed": true
+        },
+        {
+          "name": "JSON content type",
+          "passed": true
+        },
+        {
+          "name": "Body is empty object",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Create user simulated",
+      "method": "POST",
+      "status": 201,
+      "assertions": [
+        {
+          "name": "Status 201",
+          "passed": true
+        },
+        {
+          "name": "JSON content type",
+          "passed": true
+        },
+        {
+          "name": "Created response has id",
+          "passed": true
+        },
+        {
+          "name": "Submitted data echoed",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Delete user simulated",
+      "method": "DELETE",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "Status 200",
+          "passed": true
+        },
+        {
+          "name": "JSON content type",
+          "passed": true
+        },
+        {
+          "name": "Body is empty object",
+          "passed": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reservation Lab</title>
+<style>
+body{font:16px/1.6 system-ui,sans-serif;background:#f3f5f2;color:#172a25;margin:0;padding:5vw}main{max-width:640px;margin:auto;background:white;padding:36px;border:1px solid #d7e1dc;border-radius:18px}h1{margin-top:0;font-size:32px}label{display:block;margin-top:18px;font-weight:600}input,select,button{box-sizing:border-box;width:100%;padding:12px;font:inherit;border:1px solid #a8bab1;border-radius:6px}button{margin-top:22px;background:#174d3b;color:white;cursor:pointer}button:disabled{opacity:.6}small{color:#54685e}#result{min-height:30px}a{color:#174d3b}
+</style>
+<main>
+<small>УЧЕБНЫЙ СТЕНД · ТОЛЬКО ЛОКАЛЬНЫЕ ДАННЫЕ</small>
+<h1>Резерв товара</h1>
+<p>Проверка API, браузера и согласованности остатков.</p>
+<form id="reservation-form">
+<label for="sku">Товар</label><select id="sku" required></select>
+<p id="stock" aria-live="polite"></p>
+<label for="quantity">Количество</label><input id="quantity" type="number" min="1" max="100" step="1" value="1" required>
+<label for="email">Email</label><input id="email" type="email" maxlength="254" required placeholder="qa@example.com">
+<button type="submit" id="submit">Зарезервировать</button>
+</form>
+<p id="result" role="status" aria-live="polite"></p>
+<button id="cancel" hidden>Отменить резерв</button>
+</main>
+<script>
+const sku = document.querySelector('#sku');
+const result = document.querySelector('#result');
+const cancel = document.querySelector('#cancel');
+const submit = document.querySelector('#submit');
+let products = [], reservationId = null;
+// Retain the key after a transport failure, so retrying cannot double reserve.
+let pendingKey = null, pendingPayload = null;
+async function refresh(){
+  const response = await fetch('/api/products');
+  if(!response.ok) throw new Error('products');
+  products = await response.json();
+  const selected = sku.value;
+  sku.replaceChildren(...products.map(p=>new Option(p.name,p.sku)));
+  if(selected) sku.value = selected;
+  stock();
+}
+function stock(){
+  const product=products.find(p=>p.sku===sku.value);
+  document.querySelector('#stock').textContent=product?`Доступно: ${product.stock}`:'';
+}
+sku.addEventListener('change',stock);
+document.querySelector('#reservation-form').addEventListener('submit',async event=>{
+  event.preventDefault(); submit.disabled=true;
+  const payload=JSON.stringify({sku:sku.value,quantity:Number(document.querySelector('#quantity').value),email:document.querySelector('#email').value});
+  if(payload!==pendingPayload || !pendingKey){pendingKey=crypto.randomUUID();pendingPayload=payload;}
+  try {
+    const response=await fetch('/api/reservations',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':pendingKey},body:payload});
+    const body=await response.json();
+    pendingKey=null; pendingPayload=null;
+    if(response.ok){
+      reservationId=body.id;result.textContent=body.status==='active'?`Резерв создан: ${body.quantity} шт.`:'Этот резерв уже отменён';cancel.hidden=body.status!=='active';
+    } else {
+      result.textContent=body.error==='insufficient_stock'?'Недостаточно товара':`Ошибка: ${body.error}`;
+    }
+    await refresh();
+  } catch(error){result.textContent='Ошибка соединения. Повторите запрос.';}
+  finally{submit.disabled=false;}
+});
+cancel.addEventListener('click',async()=>{
+  cancel.disabled=true;
+  try {
+    const response=await fetch(`/api/reservations/${reservationId}`,{method:'DELETE'});
+    if(!response.ok) throw new Error('cancel');
+    result.textContent='Резерв отменён';cancel.hidden=true;await refresh();
+  } catch(error){result.textContent='Не удалось отменить резерв. Повторите запрос.';}
+  finally{cancel.disabled=false;}
+});
+refresh().catch(()=>{result.textContent='Не удалось загрузить товары';submit.disabled=true;});
+</script>
+</html>
